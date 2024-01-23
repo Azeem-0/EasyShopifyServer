@@ -72,7 +72,6 @@ async function getProducts(req, res) {
         console.error('Error retrieving data from Redis:', err);
       } else if (cachedData.length !== 0) {
         const products = cachedData.map(str => JSON.parse(str));
-        console.log("Data found in cache");
         res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
       } else {
         const products = await productModel.find({});
@@ -92,7 +91,6 @@ async function getProducts(req, res) {
             }
           });
         }
-        console.log("Found From Database");
         res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
       }
     });

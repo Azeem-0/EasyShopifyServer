@@ -22,7 +22,7 @@ async function getRegistration(req, res) {
           address: address,
           wallet: 500,
           profileImage: profileUrl,
-          ordersPrice: 0,
+          ordersPrice: 0
         });
         newUser.save();
       });
@@ -74,6 +74,40 @@ async function getLogin(req, res) {
   }
 }
 
+async function getOauthLogin(req, res) {
+  const { credential } = req.body.credentialResponse;
+  const decodedToken = jwt.decode(credential);
+  const user = await userModel.findOne({ email: decodedToken.email });
+  var newUser = user;
+  if (!user) {
+    newUser = {
+      _id: decodedToken.iat,
+      email: decodedToken.email,
+      name: decodedToken.name,
+      address: 'vzm',
+      profileImage: decodedToken.picture,
+      wallet: 500,
+      ordersPrice: 0,
+      orders: [],
+      cart: []
+    }
+  }
+  const accessToken = jwt.sign(
+    {
+      id: newUser._id,
+      email: newUser.email,
+      name: newUser.name,
+    },
+    process.env.SECRET,
+    { expiresIn: "3h" }
+  );
+  res.json({
+    message: "Successfully logged in",
+    status: true,
+    user: accessToken,
+  });
+}
+
 async function authorize(req, res) {
   try {
     const authHeader = req.headers.authorization;
@@ -101,4 +135,4 @@ async function authorize(req, res) {
   }
 }
 
-module.exports = { getRegistration, getLogin, authorize };
+module.exports = { getRegistration, getLogin, authorize, getOauthLogin };
