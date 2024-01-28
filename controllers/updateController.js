@@ -40,8 +40,13 @@ async function changePassword(req, res) {
 async function changePhNumber(req, res) {
     try {
         const { phNumber, email } = req.body.userDetails;
-        await userModel.updateOne({ email: email }, { $set: { phNumber: phNumber } });
-        res.json({ message: "Successfully changed Mobile Number", status: true, update: phNumber });
+        if (phNumber.length !== 13) {
+            res.json({ message: "Phone Number Must be 10 numbers", status: false });
+        }
+        else {
+            await userModel.updateOne({ email: email }, { $set: { phNumber: phNumber } });
+            res.json({ message: "Successfully changed Mobile Number", status: true, update: phNumber });
+        }
     }
     catch (err) {
         console.log(err.message);
