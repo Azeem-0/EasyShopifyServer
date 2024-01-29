@@ -45,11 +45,13 @@ async function addProducts(req, res) {
 
 // Code To get all the keys in the database
 
-// client.keys('*', (err, keys) => {
+// client.keys('*', async (err, keys) => {
 //   if (err) {
 //     console.error('Error retrieving keys:', err);
 //   } else {
 //     console.log('Keys in the Redis database:', keys);
+//     const values = await client.lrange(cacheKey, 0, -1)
+//     console.log(values);
 //   }
 // });
 
@@ -68,37 +70,37 @@ async function getProducts(req, res) {
     // });
 
 
-    // client.lrange(cacheKey, 0, -1, async (err, cachedData) => {
-    //   if (err) {
-    //     console.error('Error retrieving data from Redis:', err);
-    //   } else if (cachedData.length !== 0) {
-    //     const products = cachedData.map(str => JSON.parse(str));
-    //     console.log("Products are fetched from Cache!");
-    //     res.json({ message: "Products are fetched from Cache!", products: products, count: products.length, status: true });
-    //   } else {
-    //     const products = await productModel.find({});
-    //     if (products && products.length !== 0) {
-    //       const serializedArray = products.map(obj => JSON.stringify(obj));
-    //       client.rpush(cacheKey, ...serializedArray, (err) => {
-    //         if (err) {
-    //           console.error('Error pushing data to Redis list:', err);
-    //         } else {
-    //           client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
-    //             if (expireErr) {
-    //               console.error('Error setting expiration for Redis list key:', expireErr);
-    //             } else {
-    //               console.log('Expiration set for products list key');
-    //             }
-    //           });
-    //         }
-    //       });
-    //     }
-    //     res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
-    //     console.log("Products are fetched from Database!");
-    //   }
-    // });
-    const products = await productModel.find({});
-    res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
+    client.lrange(cacheKey, 0, -1, async (err, cachedData) => {
+      if (err) {
+        console.error('Error retrieving data from Redis:', err);
+      } else if (cachedData.length !== 0) {
+        const products = cachedData.map(str => JSON.parse(str));
+        console.log("Products are fetched from Cache!");
+        res.json({ message: "Products are fetched from Cache!", products: products, count: products.length, status: true });
+      } else {
+        const products = await productModel.find({});
+        if (products && products.length !== 0) {
+          const serializedArray = products.map(obj => JSON.stringify(obj));
+          client.rpush(cacheKey, ...serializedArray, (err) => {
+            if (err) {
+              console.error('Error pushing data to Redis list:', err);
+            } else {
+              client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
+                if (expireErr) {
+                  console.error('Error setting expiration for Redis list key:', expireErr);
+                } else {
+                  console.log('Expiration set for products list key');
+                }
+              });
+            }
+          });
+        }
+        res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
+        console.log("Products are fetched from Database!");
+      }
+    });
+    // const products = await productModel.find({});
+    // res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
   }
   catch (err) {
     console.log("ERROR", err.message);
@@ -115,32 +117,29 @@ async function generateDate() {
   return newDate;
 }
 
-// async function alterProductQuantity(pId, product, quantity) {
+async function alterProductQuantity(pId, product, quantity) {
 
-//   client.lrem(cacheKey, 0, JSON.stringify({ product }), async (remErr) => {
-//     if (remErr) {
-//       console.error('Error removing product from Redis list:', remErr);
-//     } else {
-//       console.log('Product removed from cache');
-//       const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
-//       const updatedSerializedProduct = JSON.stringify(updatedProduct);
-//       client.rpush(cacheKey, updatedSerializedProduct, (pushErr) => {
-//         if (pushErr) {
-//           console.error('Error pushing updated data to Redis cache', pushErr);
-//         }
-//         else {
-//           client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
-//             if (expireErr) {
-//               console.error('Error setting expiration for Redis list key:', expireErr);
-//             } else {
-//               console.log('Expiration set for products list key');
-//             }
-//           });
-//         }
-//       })
-//     }
-//   });
-// }
+  client.lrem(cacheKey, 0, JSON.stringify(product), async (remErr) => {
+    if (remErr) {
+      console.error('Error removing product from Redis list:', remErr);
+    } else {
+      const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
+      const updatedSerializedProduct = JSON.stringify(updatedProduct);
+      client.rpush(cacheKey, updatedSerializedProduct, (pushErr) => {
+        if (pushErr) {
+          console.error('Error pushing updated data to Redis cache', pushErr);
+        }
+        else {
+          client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
+            if (expireErr) {
+              console.error('Error setting expiration for Redis list key:', expireErr);
+            }
+          });
+        }
+      })
+    }
+  });
+}
 
 async function addUserProducts(req, res) {
   try {
@@ -178,8 +177,9 @@ async function addUserProducts(req, res) {
         const orderedDate = new Date().toLocaleDateString("en-IN");
         const [day1, month1, year1] = orderedDate.split('/');
         const oDate = new Date(`${year1}-${month1}-${day1}`);
-        // await alterProductQuantity(pId, product, (-1 * quantity));
-        const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: -quantity } }, { new: true });
+        await alterProductQuantity(pId, product, (-1 * quantity));
+        const updatedQuantity = product.quantity - quantity;
+        // const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: -quantity } }, { new: true });
         const deliveryDate = await generateDate();
         const [day2, month2, year2] = deliveryDate.split('/');
         const dDate = new Date(`${year2}-${month2}-${day2}`);
@@ -207,7 +207,7 @@ async function addUserProducts(req, res) {
           )
           .populate("orders.product")
           .populate("cart.product");
-        res.json({ message: "Ordered Successfully", user: buyer, status: true });
+        res.json({ message: "Ordered Successfully", user: buyer, quantity: updatedQuantity, status: true });
       }
       else {
         res.json({
@@ -254,27 +254,19 @@ async function removeUserProduct(req, res) {
       const quantity = parseInt(req.body.quantity, 10);
       const price = parseInt(req.body.price, 10);
       const product = await productModel.findOne({ _id: pId });
-      // await alterProductQuantity(pId, product, quantity);
-      await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
+      const updatedQuantity = product.quantity + quantity;
+      await alterProductQuantity(pId, product, quantity);
+      // await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
       // await alterQuantity(pId, updatedProduct);
-      const user = await userModel.findOneAndUpdate(
-        { email: email, "orders._id": orderId },
-        {
-          $set: { 'orders.$.cancelled': true },
-          $inc: { wallet: price, ordersPrice: -price }
-        },
-        {
-          projection: { orders: 1, cart: 1, wallet: 1, ordersPrice: 1 },
-          new: true
-        }
-      ).populate("orders.product").populate("cart.product");
+      const user = await userModel.findOneAndUpdate({ email: email, "orders._id": orderId }, { $set: { 'orders.$.cancelled': true }, $inc: { wallet: price, ordersPrice: -price } }, { projection: { orders: 1, cart: 1, wallet: 1, ordersPrice: 1, }, new: true }).populate("orders.product").populate("cart.product");
       res.json({
         message: "Successfully Cancelled!",
         status: true,
         orders: user.orders,
         cart: user.cart,
         wallet: user.wallet,
-        ordersPrice: user.ordersPrice
+        ordersPrice: user.ordersPrice,
+        quantity: updatedQuantity
       });
     }
   } catch (err) {
