@@ -325,4 +325,23 @@ async function rateProduct(req, res) {
   }
 }
 
-module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, };
+async function getOrderedProducts(req, res) {
+  try {
+    const token = req.headers['authorization'];
+    const decodedToken = jwt.decode(token, process.env.SECRET);
+    const user = await userModel.findOne({ email: decodedToken.email });
+    const orders = await Promise.all(user.orders.map(async (ele) => {
+      if (ele.cancelled === false) {
+        const product = await productModel.findOne({ _id: ele.product });
+        return product;
+      }
+    }));
+    const filteredOrders = orders.filter(order => order !== undefined);
+    res.json({ message: "Successfully fetched recently purchased products", status: true, products: filteredOrders });
+  }
+  catch (err) {
+    console.log('Error has occured');
+    res.json({ message: "There might be some issue...Please try again!", status: false });
+  }
+}
+module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts };
