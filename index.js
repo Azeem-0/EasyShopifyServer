@@ -10,6 +10,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const productApi = require("./apis/productApi");
 const userModel = require("./models/userModel");
+const { Server } = require("socket.io");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -18,6 +19,8 @@ const app = express();
 mongoose.connect(process.env.DB).then(() => {
   console.log("Connected To DataBase");
 });
+
+
 
 
 // MIDDLE WARES
@@ -71,6 +74,17 @@ app.use("/dashboard/product", productApi);
 
 // LISTENING TO PORT
 
-app.listen(port, () => {
+const expressServer = app.listen(port, () => {
   console.log(`Listening to port ${port}`);
 });
+
+
+const io = new Server(expressServer, {
+  cors: process.env.FRONT_END_URL,
+  methods: ["Get", "Post", "Delete", "Patch"]
+})
+
+
+io.on('connection', (socket) => {
+  console.log(socket.id);
+})
