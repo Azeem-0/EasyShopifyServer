@@ -11,6 +11,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const productApi = require("./apis/productApi");
 const userModel = require("./models/userModel");
 const { Server } = require("socket.io");
+const { searchUsers, mapSocketIds, updateUsersProduct } = require("./controllers/ProductsController");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -86,5 +87,16 @@ const io = new Server(expressServer, {
 
 
 io.on('connection', (socket) => {
-  console.log(socket.id);
+
+  socket.on('search-user', async (data) => {
+    const currUser = data.email;
+    const reqUser = data.userSearch;
+    const users = await searchUsers(currUser, reqUser);
+    socket.emit('on-search-user', users);
+  });
+
+  socket.on('send-product', async (data) => {
+    await updateUsersProduct(data.email, data.name, data.sendingProduct);
+  })
+
 })

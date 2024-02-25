@@ -30,6 +30,18 @@ const userSchema = new mongoose.Schema({
   ordersPrice: {
     type: Number
   },
+  sendedProducts: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'products',
+      },
+      senderEmail: String,
+      receiverEmail: String,
+      reaction: String,
+      reactionState: Boolean
+    }
+  ],
   cart: [
     {
       product: {
