@@ -9,9 +9,11 @@ const updatesRoute = require("./apis/updatesApi");
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const productApi = require("./apis/productApi");
+const userApi = require("./apis/userApi");
 const userModel = require("./models/userModel");
 const { Server } = require("socket.io");
-const { searchUsers, mapSocketIds, updateUsersProduct } = require("./controllers/ProductsController");
+const { updateUsersProduct } = require("./controllers/ProductsController");
+const { searchUsers, getMessages } = require('./controllers/userController');
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -72,6 +74,7 @@ app.use(compression());
 app.use("/", updatesRoute);
 app.use("/auth", authApi);
 app.use("/dashboard/product", productApi);
+app.use("/user", userApi);
 
 // LISTENING TO PORT
 
@@ -95,8 +98,13 @@ io.on('connection', (socket) => {
     socket.emit('on-search-user', users);
   });
 
+  socket.on('get-messages', async (data) => {
+    const messages = await getMessages(data);
+    socket.emit('on-get-messages', messages);
+  });
+
   socket.on('send-product', async (data) => {
     await updateUsersProduct(data.email, data.name, data.sendingProduct);
-  })
+  });
 
 })

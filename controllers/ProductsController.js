@@ -345,43 +345,38 @@ async function getOrderedProducts(req, res) {
   }
 }
 
-async function searchUsers(currUser, reqUser) {
-  try {
-    const users = await userModel.find({
-      email: { $regex: `^${reqUser}`, $options: 'i', $ne: currUser },
-    });
-    return users;
-  } catch (error) {
-    console.error(error.message);
-    return false;
-  }
-}
-
 async function updateUsersProduct(sender, receiver, product) {
   try {
     await userModel.updateOne({ email: sender }, {
       $push: {
-        sendedProducts: {
+        messages: {
           product: product,
           senderEmail: sender,
           receiverEmail: receiver,
           reaction: '',
+          newMessage: true
         }
+      },
+      $set: {
+        newMessages: true
       }
     });
 
     await userModel.updateOne({ email: receiver }, {
       $push: {
-        sendedProducts: {
+        messages: {
           product: product,
           senderEmail: sender,
           receiverEmail: receiver,
           reaction: '',
+          newMessage: true
         }
+      },
+      $set: {
+        newMessages: true
       }
     });
-
-
+    return true;
   } catch (error) {
     console.error(error.message);
     return false;
@@ -389,4 +384,4 @@ async function updateUsersProduct(sender, receiver, product) {
 }
 
 
-module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts, searchUsers, updateUsersProduct };
+module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts, updateUsersProduct };

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   ordersPrice: {
     type: Number
   },
-  sendedProducts: [
+  messages: [
     {
       product: {
         type: mongoose.Schema.Types.ObjectId,
@@ -39,9 +39,13 @@ const userSchema = new mongoose.Schema({
       senderEmail: String,
       receiverEmail: String,
       reaction: String,
-      reactionState: Boolean
+      newMessage: Boolean
     }
   ],
+  newMessages: {
+    type: Boolean,
+    default: false
+  },
   cart: [
     {
       product: {
