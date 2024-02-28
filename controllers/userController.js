@@ -38,4 +38,16 @@ async function makeAllMessagesSeen(req, res) {
         res.json({ message: "failure", status: false });
     }
 }
-module.exports = { searchUsers, getMessages, makeAllMessagesSeen };
+
+async function reactToMessage(req, res) {
+    try {
+        const { mId, emoji } = req.body;
+        console.log(mId, emoji);
+        res.json({ message: "success", status: true });
+    }
+    catch (err) {
+        console.log(err.message);
+        res.json({ message: "failure", status: false });
+    }
+}
+module.exports = { searchUsers, getMessages, makeAllMessagesSeen, reactToMessage };
