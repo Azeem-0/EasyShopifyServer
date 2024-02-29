@@ -1,3 +1,4 @@
+const messagesModel = require('../models/messagesModel');
 const userModel = require('../models/userModel');
 
 
@@ -15,10 +16,11 @@ async function searchUsers(currUser, reqUser) {
 
 async function getMessages(email) {
     try {
-        const messages = await userModel.findOne({ email: email }).populate('messages.product');
+        const user = await userModel.findOne({ email: email }).populate('messages');
+        await user?.populate('messages.product');
         const newMessages = {
-            messages: messages?.messages,
-            newMessages: messages?.newMessages
+            messages: user?.messages,
+            newMessages: user?.newMessages
         };
         return newMessages;
     } catch (error) {
@@ -30,7 +32,7 @@ async function getMessages(email) {
 async function makeAllMessagesSeen(req, res) {
     try {
         const { email } = req.body;
-        await userModel.updateOne({ email: email }, { $set: { 'messages.$[].newMessage': false, newMessages: false } });
+        await userModel.updateOne({ email: email }, { $set: { newMessages: false } });
         res.json({ message: "success", status: true });
     }
     catch (err) {
@@ -42,7 +44,7 @@ async function makeAllMessagesSeen(req, res) {
 async function reactToMessage(req, res) {
     try {
         const { mId, emoji } = req.body;
-        console.log(mId, emoji);
+        await messagesModel.updateOne({ _id: mId }, { $set: { reaction: emoji } });
         res.json({ message: "success", status: true });
     }
     catch (err) {

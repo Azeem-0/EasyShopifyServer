@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const productModel = require("../models/productModel");
 const userModel = require("../models/userModel");
 const Redis = require("ioredis");
+const messagesModel = require("../models/messagesModel");
 
 //REDIS CLIENT CONNECTION
 const client = Redis.createClient({
@@ -347,35 +348,29 @@ async function getOrderedProducts(req, res) {
 
 async function updateUsersProduct(sender, receiver, product) {
   try {
-    await userModel.updateOne({ email: sender }, {
-      $push: {
-        messages: {
-          product: product,
-          senderEmail: sender,
-          receiverEmail: receiver,
-          reaction: '',
-          newMessage: true
-        }
-      },
-      $set: {
-        newMessages: true
-      }
+    const newMessage = new messagesModel({
+      product: product,
+      senderEmail: sender,
+      receiverEmail: receiver,
+      reaction: '',
     });
+    const message = await newMessage.save();
 
     await userModel.updateOne({ email: receiver }, {
       $push: {
-        messages: {
-          product: product,
-          senderEmail: sender,
-          receiverEmail: receiver,
-          reaction: '',
-          newMessage: true
-        }
+        messages: message.id
       },
       $set: {
-        newMessages: true
+        newMessages: true,
       }
     });
+
+    await userModel.updateOne({ email: sender }, {
+      $push: {
+        messages: message.id
+      }
+    });
+
     return true;
   } catch (error) {
     console.error(error.message);

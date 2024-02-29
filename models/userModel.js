@@ -32,14 +32,8 @@ const userSchema = new mongoose.Schema({
   },
   messages: [
     {
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'products',
-      },
-      senderEmail: String,
-      receiverEmail: String,
-      reaction: String,
-      newMessage: Boolean
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'messages',
     }
   ],
   newMessages: {
