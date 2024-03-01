@@ -7,7 +7,10 @@ const messagesSchema = new mongoose.Schema({
     },
     senderEmail: String,
     receiverEmail: String,
-    reaction: String,
+    reaction: {
+        type: String,
+        default: ''
+    },
 });
 
 const messagesModel = mongoose.model("messages", messagesSchema);

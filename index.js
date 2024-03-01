@@ -104,7 +104,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-product', async (data) => {
-    await updateUsersProduct(data.email, data.name, data.sendingProduct);
+    const result = await updateUsersProduct(data.email, data.name, data.sendingProduct);
+    socket.emit('successfully-send-product', result);
   });
 
 })
