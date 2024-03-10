@@ -180,7 +180,6 @@ async function addUserProducts(req, res) {
         const oDate = new Date(`${year1}-${month1}-${day1}`);
         await alterProductQuantity(pId, product, (-1 * quantity));
         const updatedQuantity = product.quantity - quantity;
-        // const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: -quantity } }, { new: true });
         const deliveryDate = await generateDate();
         const [day2, month2, year2] = deliveryDate.split('/');
         const dDate = new Date(`${year2}-${month2}-${day2}`);
@@ -202,7 +201,6 @@ async function addUserProducts(req, res) {
               },
               $pull: { cart: { product: pId } },
               $inc: { wallet: -totalPrice, ordersPrice: totalPrice },
-
             },
             { projection: { orders: 1, wallet: 1, cart: 1, ordersPrice: 1 }, new: true }
           )
@@ -257,8 +255,6 @@ async function removeUserProduct(req, res) {
       const product = await productModel.findOne({ _id: pId });
       const updatedQuantity = product.quantity + quantity;
       await alterProductQuantity(pId, product, quantity);
-      // await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
-      // await alterQuantity(pId, updatedProduct);
       const user = await userModel.findOneAndUpdate({ email: email, "orders._id": orderId }, { $set: { 'orders.$.cancelled': true }, $inc: { wallet: price, ordersPrice: -price } }, { projection: { orders: 1, cart: 1, wallet: 1, ordersPrice: 1, }, new: true }).populate("orders.product").populate("cart.product");
       res.json({
         message: "Successfully Cancelled!",
@@ -377,6 +373,7 @@ async function updateUsersProduct(sender, receiver, product) {
     return false;
   }
 }
+
 
 
 module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts, updateUsersProduct };
