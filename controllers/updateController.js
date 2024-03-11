@@ -58,17 +58,21 @@ async function changePhNumber(req, res) {
 
 async function changeWallet(req, res) {
 
+    // console.log('helo');
+
     const { addWallet, email } = req.body;
 
     console.log('helo', req.body, addWallet, email);
 
     try {
         const user = await userModel.updateOne({ email: email }, { $inc: { wallet: addWallet } });
-        res.json({ message: "Successfully added money to wallet!", status: true, update: user.wallet });
+        res.send("Successfully Updated");
+        // res.json({ message: "Successfully added money to wallet!", status: true, update: user.wallet });
     }
     catch (error) {
         console.log(error.message);
-        res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
+        // res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
+        res.send("Error occured");
     }
 }
 
