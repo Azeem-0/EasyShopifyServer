@@ -10,7 +10,7 @@ router.post("/updatePassword", changePassword);
 
 router.post("/updatePhNumber", changePhNumber);
 
-router.get("/updateWallet", changeWallet);
+router.post("/updateWallet", changeWallet);
 
 router.post('/checkoutPage', checkoutPage);
 

@@ -30,6 +30,13 @@ const userSchema = new mongoose.Schema({
   ordersPrice: {
     type: Number
   },
+  payments: [
+    {
+      session_id: {
+        type: String
+      }
+    }
+  ],
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,

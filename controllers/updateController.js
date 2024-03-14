@@ -3,6 +3,7 @@ const userModel = require("../models/userModel");
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const sessionModel = require('../models/sessionModel');
 
 
 async function changeName(req, res) {
@@ -58,21 +59,29 @@ async function changePhNumber(req, res) {
 
 async function changeWallet(req, res) {
 
-    // console.log('helo');
 
-    const { addWallet, email } = req.body;
+    const { sessionId, email, addWallet } = req.body;
 
-    console.log('helo', req.body, addWallet, email);
 
     try {
-        const user = await userModel.updateOne({ email: email }, { $inc: { wallet: addWallet } });
-        res.send("Successfully Updated");
-        // res.json({ message: "Successfully added money to wallet!", status: true, update: user.wallet });
+
+        const sessionIds = await sessionModel.find({});
+        const isPresent = sessionIds.find(ele => ele.session_id === sessionId);
+        if (isPresent) {
+            var user;
+            const ifUser = await userModel.findOne({ email: email, 'payments.session_id': sessionId });
+            if (!ifUser) {
+                user = await userModel.updateOne({ email: email }, { $inc: { wallet: addWallet }, $push: { payments: { session_id: sessionId } } });
+            }
+            res.json({ message: "Successfully added money to wallet!", status: true, update: user.wallet });
+        }
+        else {
+            res.json({ message: "Un-Authorized access", status: false });
+        }
     }
     catch (error) {
         console.log(error.message);
-        // res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
-        res.send("Error occured");
+        res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
     }
 }
 
@@ -95,12 +104,15 @@ async function checkoutPage(req, res) {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: "payment",
-            success_url: `http://localhost:3000/success`,
+            success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}&email=${email}&addWallet=${addWallet}`,
             cancel_url: `http://localhost:3000/failure`
         });
 
-        const user = await userModel.updateOne({ email: email }, { $inc: { wallet: addWallet } });
-        res.json({ id: session.id, userWallet: user.wallet });
+        const newSession = new sessionModel({
+            session_id: session.id
+        });
+        newSession.save();
+        res.json({ id: session.id });
 
     } catch (error) {
         console.log(error.message);
