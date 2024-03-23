@@ -38,7 +38,15 @@ async function changePassword(req, res) {
 
     }
 }
-
+async function updateProfile(req, res) {
+    try {
+        const { profileImage, email } = req.body;
+        await userModel.updateOne({ email: email }, { $set: { profileImage: profileImage } });
+        res.json({ message: "Successfully changed Profile Picture", status: true });
+    } catch (error) {
+        res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
+    }
+}
 
 async function changePhNumber(req, res) {
     try {
@@ -61,8 +69,6 @@ async function changeWallet(req, res) {
 
 
     const { sessionId, email, addWallet } = req.body;
-
-
     try {
 
         const sessionIds = await sessionModel.find({});
@@ -119,4 +125,4 @@ async function checkoutPage(req, res) {
         res.json({ message: "There might be some issue...Please try again!", status: false });
     }
 }
-module.exports = { changeName, changePassword, changePhNumber, changeWallet, checkoutPage };
+module.exports = { changeName, changePassword, changePhNumber, changeWallet, checkoutPage, updateProfile };
