@@ -35,7 +35,8 @@ async function addProducts(req, res) {
       imageUrl: imageUrl,
       averageRating: 0,
       ratings: [],
-      totalPurchases: 0
+      totalPurchases: 0,
+      timeStamps: new Date()
     });
     newProduct.save();
     res.json({ message: "Your product will be added within one hour", status: true });
@@ -97,8 +98,8 @@ async function getProducts(req, res) {
             }
           });
         }
-        res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
-        console.log("Products are fetched from Database!");
+        // res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
+        // console.log("Products are fetched from Database!");
       }
     });
     // const products = await productModel.find({});

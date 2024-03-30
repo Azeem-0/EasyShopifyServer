@@ -24,8 +24,11 @@ const productSchema = new mongoose.Schema({
   totalPurchases: {
     type: Number,
     default: 0
+  },
+  timeStamps: {
+    type: Date,
   }
-});
+}, { timestamps: true });
 
 const productModel = mongoose.model("products", productSchema);
 
