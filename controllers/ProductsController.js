@@ -34,7 +34,8 @@ async function addProducts(req, res) {
       category: category,
       imageUrl: imageUrl,
       averageRating: 0,
-      ratings: []
+      ratings: [],
+      totalPurchases: 0
     });
     newProduct.save();
     res.json({ message: "Your product will be added within one hour", status: true });

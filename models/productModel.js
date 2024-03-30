@@ -20,6 +20,10 @@ const productSchema = new mongoose.Schema({
   averageRating: {
     type: Number,
     default: 0
+  },
+  totalPurchases: {
+    type: Number,
+    default: 0
   }
 });
 

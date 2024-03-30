@@ -14,6 +14,7 @@ const userModel = require("./models/userModel");
 const { Server } = require("socket.io");
 const { updateUsersProduct } = require("./controllers/ProductsController");
 const { searchUsers, getMessages } = require('./controllers/userController');
+const productModel = require("./models/productModel");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -22,8 +23,6 @@ const app = express();
 mongoose.connect(process.env.DB).then(() => {
   console.log("Connected To DataBase");
 });
-
-
 
 
 // MIDDLE WARES
