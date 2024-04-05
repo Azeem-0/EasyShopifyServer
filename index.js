@@ -22,6 +22,8 @@ mongoose.connect(process.env.DB).then(() => {
 });
 
 
+
+
 // MIDDLE WARES
 app.use(cors());
 app.use(express.json());
@@ -47,7 +49,6 @@ const io = new Server(expressServer, {
 
 
 io.on('connection', (socket) => {
-
   socket.on('search-user', async (data) => {
     const currUser = data.email;
     const reqUser = data.userSearch;
@@ -65,4 +66,5 @@ io.on('connection', (socket) => {
     socket.emit('successfully-send-product', result);
   });
 
+  console.log(socket.id);
 })
