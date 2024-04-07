@@ -12,7 +12,6 @@ const { Server } = require("socket.io");
 const { updateUsersProduct } = require("./controllers/ProductsController");
 const { searchUsers, getMessages } = require('./controllers/userController');
 const productModel = require("./models/productModel");
-const { updateUsersProduct } = require("./controllers/ProductsController");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -21,8 +20,6 @@ const app = express();
 mongoose.connect(process.env.DB).then(() => {
   console.log("Connected To DataBase");
 });
-
-
 
 
 // MIDDLE WARES
@@ -67,10 +64,5 @@ io.on('connection', (socket) => {
     const result = await updateUsersProduct(data.email, data.name, data.sendingProduct);
     socket.emit('successfully-send-product', result);
   });
-
-  console.log(socket.id);
-  socket.on('send-product', async (data) => {
-    await updateUsersProduct(data.email, data.name, data.sendingProduct);
-  })
 
 })

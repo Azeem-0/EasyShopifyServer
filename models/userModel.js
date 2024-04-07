@@ -47,18 +47,6 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  sendedProducts: [
-    {
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'products',
-      },
-      senderEmail: String,
-      receiverEmail: String,
-      reaction: String,
-      reactionState: Boolean
-    }
-  ],
   cart: [
     {
       product: {
