@@ -370,6 +370,43 @@ async function updateUsersProduct(sender, receiver, product) {
     });
 
     return true;
+async function searchUsers(currUser, reqUser) {
+  try {
+    const users = await userModel.find({
+      email: { $regex: `^${reqUser}`, $options: 'i', $ne: currUser },
+    });
+    return users;
+  } catch (error) {
+    console.error(error.message);
+    return false;
+  }
+}
+
+async function updateUsersProduct(sender, receiver, product) {
+  try {
+    await userModel.updateOne({ email: sender }, {
+      $push: {
+        sendedProducts: {
+          product: product,
+          senderEmail: sender,
+          receiverEmail: receiver,
+          reaction: '',
+        }
+      }
+    });
+
+    await userModel.updateOne({ email: receiver }, {
+      $push: {
+        sendedProducts: {
+          product: product,
+          senderEmail: sender,
+          receiverEmail: receiver,
+          reaction: '',
+        }
+      }
+    });
+
+
   } catch (error) {
     console.error(error.message);
     return false;
@@ -377,5 +414,4 @@ async function updateUsersProduct(sender, receiver, product) {
 }
 
 
-
-module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts, updateUsersProduct };
+module.exports = { getProducts, addUserProducts, getUserProducts, removeUserProduct, addProducts, rateProduct, getOrderedProducts, searchUsers, updateUsersProduct };

@@ -12,6 +12,7 @@ const { Server } = require("socket.io");
 const { updateUsersProduct } = require("./controllers/ProductsController");
 const { searchUsers, getMessages } = require('./controllers/userController');
 const productModel = require("./models/productModel");
+const { updateUsersProduct } = require("./controllers/ProductsController");
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -49,6 +50,7 @@ const io = new Server(expressServer, {
 
 
 io.on('connection', (socket) => {
+
   socket.on('search-user', async (data) => {
     const currUser = data.email;
     const reqUser = data.userSearch;
@@ -67,4 +69,8 @@ io.on('connection', (socket) => {
   });
 
   console.log(socket.id);
+  socket.on('send-product', async (data) => {
+    await updateUsersProduct(data.email, data.name, data.sendingProduct);
+  })
+
 })
