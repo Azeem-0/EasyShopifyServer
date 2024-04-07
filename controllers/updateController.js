@@ -110,8 +110,8 @@ async function checkoutPage(req, res) {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: "payment",
-            success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}&email=${email}&addWallet=${addWallet}`,
-            cancel_url: `http://localhost:3000/failure`
+            success_url: `${process.env.FRONT_END_URL}/success?session_id={CHECKOUT_SESSION_ID}&email=${email}&addWallet=${addWallet}`,
+            cancel_url: `${process.env.FRONT_END_URL}/failure`
         });
 
         const newSession = new sessionModel({
