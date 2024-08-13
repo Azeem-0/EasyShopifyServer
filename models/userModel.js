@@ -4,7 +4,9 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     type: String,
     default:
-      "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?w=740&t=st=1694273374~exp=1694273974~hmac=9b65d53a65ee3f425191fc478cdf4e7edf46ebc24cfb8fb488d20a142b9542d0",
+  
+      "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.j"+
+      "pg?w=740&t=st=1694273374~exp=1694273974~hmac=9b65d53a65ee3f425191fc478cdf4e7edf46ebc24cfb8fb488d20a142b9542d0",
   },
   name: {
     type: String,

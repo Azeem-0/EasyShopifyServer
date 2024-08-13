@@ -1,27 +1,27 @@
 const jwt = require("jsonwebtoken");
 const productModel = require("../models/productModel");
 const userModel = require("../models/userModel");
-const Redis = require("ioredis");
+// const Redis = require("ioredis");
 const messagesModel = require("../models/messagesModel");
 
-//REDIS CLIENT CONNECTION
-const client = Redis.createClient({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD,
-});
+// //REDIS CLIENT CONNECTION
+// const client = Redis.createClient({
+//   host: process.env.REDIS_HOST,
+//   port: process.env.REDIS_PORT,
+//   password: process.env.REDIS_PASSWORD,
+// });
 
-const cacheKey = 'cacheKey';
-const cacheExpirationTime = 3600;
+// const cacheKey = 'cacheKey';
+// const cacheExpirationTime = 3600;
 
-client.on('error', (err) => {
-  console.error('Redis error:', err);
-});
+// client.on('error', (err) => {
+//   console.error('Redis error:', err);
+// });
 
-// Check if Redis is ready
-client.on('ready', () => {
-  console.log('Connected to Redis');
-});
+// // Check if Redis is ready
+// client.on('ready', () => {
+//   console.log('Connected to Redis');
+// });
 
 async function addProducts(req, res) {
   try {
@@ -39,7 +39,7 @@ async function addProducts(req, res) {
       timeStamps: new Date()
     });
     newProduct.save();
-    res.json({ message: "Your product will be added within one hour", status: true });
+    res.json({ message: "Your product is successfully added to the store.", status: true });
   } catch (err) {
     console.log(err);
     res.json({ message: "Something went wrong. Please refresh the page and try again.", status: false });
@@ -73,37 +73,37 @@ async function getProducts(req, res) {
     // });
 
 
-    client.lrange(cacheKey, 0, -1, async (err, cachedData) => {
-      if (err) {
-        console.error('Error retrieving data from Redis:', err);
-      } else if (cachedData.length !== 0) {
-        const products = cachedData.map(str => JSON.parse(str));
-        console.log("Products are fetched from Cache!");
-        res.json({ message: "Products are fetched from Cache!", products: products, count: products.length, status: true });
-      } else {
-        const products = await productModel.find({});
-        if (products && products.length !== 0) {
-          const serializedArray = products.map(obj => JSON.stringify(obj));
-          client.rpush(cacheKey, ...serializedArray, (err) => {
-            if (err) {
-              console.error('Error pushing data to Redis list:', err);
-            } else {
-              client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
-                if (expireErr) {
-                  console.error('Error setting expiration for Redis list key:', expireErr);
-                } else {
-                  console.log('Expiration set for products list key');
-                }
-              });
-            }
-          });
-        }
-        // res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
-        // console.log("Products are fetched from Database!");
-      }
-    });
-    // const products = await productModel.find({});
-    // res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
+    // client.lrange(cacheKey, 0, -1, async (err, cachedData) => {
+    //   if (err) {
+    //     console.error('Error retrieving data from Redis:', err);
+    //   } else if (cachedData.length !== 0) {
+    //     const products = cachedData.map(str => JSON.parse(str));
+    //     console.log("Products are fetched from Cache!");
+    //     res.json({ message: "Products are fetched from Cache!", products: products, count: products.length, status: true });
+    //   } else {
+    //     const products = await productModel.find({});
+    //     if (products && products.length !== 0) {
+    //       const serializedArray = products.map(obj => JSON.stringify(obj));
+    //       client.rpush(cacheKey, ...serializedArray, (err) => {
+    //         if (err) {
+    //           console.error('Error pushing data to Redis list:', err);
+    //         } else {
+    //           client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
+    //             if (expireErr) {
+    //               console.error('Error setting expiration for Redis list key:', expireErr);
+    //             } else {
+    //               console.log('Expiration set for products list key');
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    // res.json({ message: "Products are fetched from Database!", products: products, count: products.length, status: true });
+    // console.log("Products are fetched from Database!");
+    // }
+    // });
+    const products = await productModel.find({});
+    res.json({ message: "Products are fetched!", products: products, count: products.length, status: true });
   }
   catch (err) {
     console.log("ERROR", err.message);
