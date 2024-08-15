@@ -122,26 +122,42 @@ async function generateDate() {
 
 async function alterProductQuantity(pId, product, quantity) {
 
-  client.lrem(cacheKey, 0, JSON.stringify(product), async (remErr) => {
-    if (remErr) {
-      console.error('Error removing product from Redis list:', remErr);
+  try {
+    const updatedProduct = await productModel.findOneAndUpdate(
+      { _id: pId },
+      { $inc: { quantity: quantity } },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      console.error('Error updating product quantity in the database');
     } else {
-      const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
-      const updatedSerializedProduct = JSON.stringify(updatedProduct);
-      client.rpush(cacheKey, updatedSerializedProduct, (pushErr) => {
-        if (pushErr) {
-          console.error('Error pushing updated data to Redis cache', pushErr);
-        }
-        else {
-          client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
-            if (expireErr) {
-              console.error('Error setting expiration for Redis list key:', expireErr);
-            }
-          });
-        }
-      })
+      console.log('Product quantity updated successfully:');
     }
-  });
+  } catch (err) {
+    console.error('Error during product update:', err);
+  }
+
+  // client.lrem(cacheKey, 0, JSON.stringify(product), async (remErr) => {
+  //   if (remErr) {
+  //     console.error('Error removing product from Redis list:', remErr);
+  //   } else {
+  //     const updatedProduct = await productModel.findOneAndUpdate({ _id: pId }, { $inc: { quantity: quantity } }, { new: true });
+  //     const updatedSerializedProduct = JSON.stringify(updatedProduct);
+  //     client.rpush(cacheKey, updatedSerializedProduct, (pushErr) => {
+  //       if (pushErr) {
+  //         console.error('Error pushing updated data to Redis cache', pushErr);
+  //       }
+  //       else {
+  //         client.expire(cacheKey, cacheExpirationTime, (expireErr) => {
+  //           if (expireErr) {
+  //             console.error('Error setting expiration for Redis list key:', expireErr);
+  //           }
+  //         });
+  //       }
+  //     })
+  //   }
+  // });
 }
 
 async function addUserProducts(req, res) {
